@@ -14,8 +14,6 @@ namespace RequiredModDownloader
 {
     // Copyright Orius 2021
     // This code is super unfinished please don't murder me yet
-    // But still I hope yall enjoy what you see
-    // It's 11PM and I'm tired aaaaaaaah
 
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
