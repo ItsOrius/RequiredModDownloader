@@ -18,7 +18,7 @@ But this plugin also allows for the creator of their map to require their own cu
     ]
 }
 ```
-The settings above would download ``https://github.com/MyCoolUsername/MyCoolModRepository/releases/latest/download/MyCoolModFile.dll`` and ``https://github.com/MyCoolerUsername/MyCoolerModRepository/releases/latest/download/MyCoolerModFile.dll``.
+The settings above would download ``https://github.com/MyCoolUsername/MyCoolModRepository/releases/latest/download/MyCoolModFileName.dll`` and ``https://github.com/MyCoolerUsername/MyCoolerModRepository/releases/latest/download/MyCoolerModFileName.dll``.
 
 In normal terms, the plugins follow a ``(username).(repositoryName).(dllFileName)`` template. The reason for this is that a custom download link for the plugins could result in somebody using it maliciously, i.e. putting some form of malware on the PC. That system still doesn't protect you from viruses uploaded to GitHub, which is why ".dll" is automatically added to the end of ``dllFileName``. Even with all of this, you still aren't safe because someone could hijack the DLL file with some form of a virus. However, at that point it would just be uploading malware to GitHub which is likely to get the attacker in trouble.
 
