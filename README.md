@@ -1,4 +1,4 @@
-# RequiredModDownloader
+# RequiredModInstaller
 The purpose of this plugin is to download any mods that a level requires that isn't currently installed, but also to give mappers and modders more creative freedom with their levels!
 
 For example, imagine someone tries to play ANALYS but they don't have Noodle Extensions. When they click on the level, a notification will appear telling the user they need Noodle Extensions to play it. Then there's an option for you to download the mod and reboot the game without having to switch to a PC! All approved plugins on BeatMods will automatically be capable of downloading within the game, if the level requires it.
