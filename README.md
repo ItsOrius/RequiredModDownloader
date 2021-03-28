@@ -7,11 +7,14 @@ But this plugin also allows for the creator of their map to require their own cu
 ```dat
 "_customData" : {
     "_requirements" : [
-        "MyCoolMod"
+        "MyCoolModName",
+        "MyCoolerModName",
+        "CoolModDependency",
+        "CoolerModDependency"
     ],
     "_customPlugins" : [
-        "MyCoolUsername.MyCoolModRepository.MyCoolModFile",
-        "MyCoolerUsername.MyCoolerModRepository.MyCoolerModFile"
+        "MyCoolUsername.MyCoolModRepository.MyCoolModFileName",
+        "MyCoolerUsername.MyCoolerModRepository.MyCoolerModFileName"
     ]
 }
 ```
@@ -19,5 +22,6 @@ The settings above would download ``https://github.com/MyCoolUsername/MyCoolModR
 
 In normal terms, the plugins follow a ``(username).(repositoryName).(dllFileName)`` template. The reason for this is that a custom download link for the plugins could result in somebody using it maliciously, i.e. putting some form of malware on the PC. That system still doesn't protect you from viruses uploaded to GitHub, which is why ".dll" is automatically added to the end of ``dllFileName``. Even with all of this, you still aren't safe because someone could hijack the DLL file with some form of a virus. However, at that point it would just be uploading malware to GitHub which is likely to get the attacker in trouble.
 
+Please keep in mind that if your custom mod needs dependencies (like nearly all mods) you'll have to include them in ``_requirements``, as we can't tell what dependencies you have linked in your mod.
+
 The plugin is still in development and hasn't been publicly released yet, but hopefully you'll stick with us through it all!
-(P.S. This plugin may be delayed by the fact that I want to make a level showing the possibilities that comes with the plugin. Thanks for your patience!)
