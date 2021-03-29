@@ -9,12 +9,10 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using System.IO.Compression;
+using BS_Utils;
 
 namespace RequiredModInstaller
 {
-    // Copyright Orius 2021
-    // This code is super unfinished please don't murder me yet
-
     [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
@@ -25,7 +23,6 @@ namespace RequiredModInstaller
         List<string> verifiedModsCache = new List<string>();
         List<string> communityModsCache = new List<string>();
         CustomViewController controller;
-
 
         [Init]
         public void Init(IPALogger logger)
@@ -41,12 +38,28 @@ namespace RequiredModInstaller
         {
             Log.Debug("OnApplicationStart");
             new GameObject("RequiredModInstallerController").AddComponent<RequiredModInstallerController>();
+            BS_Utils.Utilities.BSEvents.levelSelected += OnLevelSelected;
         }
 
         [OnExit]
         public void OnApplicationQuit()
         {
             Log.Debug("OnApplicationQuit");
+            BS_Utils.Utilities.BSEvents.levelSelected -= OnLevelSelected;
+        }
+
+        private void OnLevelSelected(LevelCollectionViewController levelCollection, IPreviewBeatmapLevel arg)
+        {
+            CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData beatmap = (CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData)arg;
+            JObject CustomData = JObject.Parse(beatmap.customData);
+            Log.Info($"CustomData variable is equal to...\n\n{CustomData.ToString()}");
+            int requiredModsCount = CustomData["_requirements"].Count();
+            int customModsCount = CustomData["_customPlugins"].Count();
+            List<string> requiredMods = new List<string>();
+            List<string> customMods = new List<string>();
+            for (int i = 0; i < requiredModsCount; i++) requiredMods.Add(CustomData[$"_requirements[i]"].ToString());
+            for (int i = 0; i < customModsCount; i++) customMods.Add(CustomData[$"_customPlugins[i]"].ToString());
+            CheckCustomMods(requiredMods.ToArray(), customMods.ToArray());
         }
 
         public void CheckCustomMods(String[] requiredMods, String[] customMods)

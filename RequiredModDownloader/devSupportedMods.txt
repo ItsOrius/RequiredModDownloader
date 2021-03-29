@@ -1,2 +1,2 @@
-﻿ItsOrius.DigitalLovePlatform.DigitalLovePlatform
-/
+﻿ItsOrius.RequiredModInstaller.DummyFile
+/ItsOrius.DigitalLovePlatform.DigitalLovePlatform
