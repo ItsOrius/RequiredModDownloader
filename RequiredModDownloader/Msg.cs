@@ -4,34 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RequiredModDownloader
+namespace RequiredModInstaller
 {
     public class Msg
     {
-        public static string ApprovedModNeeded(string modName)
+        public static string SingleModNeeded(string mod, string verifiedBy)
         {
-            return $"This level requires {modName}, a plugin that you haven't installed yet!\nThis plugin was verified by the BeatMods community.\nWould you like to install it and reboot the game?";
+            return $"This level requires {mod}, a plugin that you haven't installed yet!\n{verifiedBy}\nWould you like to install it and reboot the game?";
         }
 
-        public static string DevSupportedModNeeded(string modName)
-        {
-            return $"This level requires {modName}, a plugin that you haven't installed yet!\nThis mod was verified by the creator of RequiredModDownloader.\nWould you like to install it and reboot the game?";
-        }
-
-        public static string UnapprovedModNeeded()
-        {
-            return "WARNING\n\nThis level requires a custom plugin that you haven't installed yet!\nThis mod hasn't been verified, and could be malicious.\nWould you like to install it and reboot the game?";
-        }
-
-        public static string MultipleApprovedModsNeeded(string[] modNames, string verifier)
+        public static string MultipleModsNeeded(string[] mods, string verifiedBy)
         {
             string modList = "";
-            for (int i = modNames.Length - 1; i > 0; i--)
-            {
-                modList += $", {modNames[i]}";
-            }
-            modList.Substring(2);
-            return $"This level requires {modNames.Length} plugins that you haven't installed yet!\nThese plugins were verified by {verifier}.\nWould you like to install them and reboot the game?\n\nMods Required: {modList}";
+            for (int i = mods.Length; i >= 0; i--) modList += $", {mods[i]}";
+            return $"This level requires {mods.Length} plugins that you haven't installed yet!\n{verifiedBy}\nWould you like to install them and reboot the game?\n\nRequired Mods: {modList.Substring(2)}";
         }
     }
 }

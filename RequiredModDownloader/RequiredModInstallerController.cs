@@ -7,15 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace RequiredModDownloader
+namespace RequiredModInstaller
 {
     /// <summary>
     /// Monobehaviours (scripts) are added to GameObjects.
     /// For a full list of Messages a Monobehaviour can receive from the game, see https://docs.unity3d.com/ScriptReference/MonoBehaviour.html.
     /// </summary>
-    public class RequiredModDownloaderController : MonoBehaviour
+    public class RequiredModInstallerController : MonoBehaviour
     {
-        public static RequiredModDownloaderController Instance { get; private set; }
+        public static RequiredModInstallerController Instance { get; private set; }
 
         // These methods are automatically called by Unity, you should remove any you aren't using.
         #region Monobehaviour Messages
