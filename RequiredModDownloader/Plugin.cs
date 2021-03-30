@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using IPA;
@@ -9,7 +8,6 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using System.IO.Compression;
-using BS_Utils;
 
 namespace RequiredModInstaller
 {
@@ -50,21 +48,39 @@ namespace RequiredModInstaller
 
         private void OnLevelSelected(LevelCollectionViewController levelCollection, IPreviewBeatmapLevel arg)
         {
-            CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData beatmap = (CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData)arg;
-            JObject CustomData = JObject.Parse(beatmap.customData);
-            Log.Info($"CustomData variable is equal to...\n\n{CustomData.ToString()}");
-            int requiredModsCount = CustomData["_requirements"].Count();
-            int customModsCount = CustomData["_customPlugins"].Count();
+            Log.Info($"Selected level: {arg.songName} by {arg.levelAuthorName}");
+            JObject CustomData = new JObject();
+            try
+            {
+                CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData beatmap = (CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData)arg;
+                CustomData = JObject.Parse(beatmap.customData);
+                Log.Info($"CustomData variable is equal to...\n\n{CustomData.ToString()}");
+            } catch (System.Exception e)
+            {
+                Debug.Log($"Failed to get CustomData: {e}");
+            }
             List<string> requiredMods = new List<string>();
             List<string> customMods = new List<string>();
-            for (int i = 0; i < requiredModsCount; i++) requiredMods.Add(CustomData[$"_requirements[i]"].ToString());
-            for (int i = 0; i < customModsCount; i++) customMods.Add(CustomData[$"_customPlugins[i]"].ToString());
+            try {
+                int requiredModsCount = CustomData["_requirements"].Count();
+                for (int i = 0; i < requiredModsCount; i++) requiredMods.Add(CustomData[$"_requirements[i]"].ToString());
+            } catch (System.Exception e) {
+                Debug.Log($"Failed to get _requirements: {e}");
+            }
+            try {
+                int customModsCount = CustomData["_customPlugins"].Count();
+                for (int i = 0; i < customModsCount; i++) customMods.Add(CustomData[$"_customPlugins[i]"].ToString());
+            } catch (System.Exception e)
+            {
+                Debug.Log($"Failed to get _customPlugins: {e}");
+            }
             CheckCustomMods(requiredMods.ToArray(), customMods.ToArray());
         }
 
         public void CheckCustomMods(String[] requiredMods, String[] customMods)
         {
             if (Application.internetReachability == NetworkReachability.NotReachable) return;
+            if (requiredMods.Length < 1 || customMods.Length < 1) return;
 
             List<string> totalModsNeeded = new List<string>();
             List<string> verifiedModsSource = new List<string>();

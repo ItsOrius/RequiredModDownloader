@@ -57,8 +57,9 @@ namespace RequiredModInstaller
         {
             if (inAction) return;
             spnText.text = $"\n\n{spnText.text}\n\nInstalling plugins...";
-            Plugin.Instance.InstallCachedMods();
             inAction = true;
+            Plugin.Instance.InstallCachedMods();
+            inAction = false;
         }
 
         [UIAction("spn-change-active")]
@@ -91,8 +92,9 @@ namespace RequiredModInstaller
         {
             if (inAction) return;
             spnText.text = $"\n\n{mpnText.text}\n\nInstalling plugins...";
-            Plugin.Instance.InstallCachedMods();
             inAction = true;
+            Plugin.Instance.InstallCachedMods();
+            inAction = false;
         }
 
         [UIAction("mpn-change-active")]
