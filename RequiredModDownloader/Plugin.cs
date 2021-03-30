@@ -143,33 +143,28 @@ namespace RequiredModInstaller
                 controller.mpnObject.SetActive(true);
                 controller.mpnText.text = Msg.MultipleModsNeeded(totalModsNeeded.ToArray(), verifierText(beatmodsVerified, devVerified, unverified));
                 WebsiteBuilder builder = new WebsiteBuilder();
-                if (beatmodsVerified && !devVerified && !unverified)
+                List<String> names = new List<string>();
+                List<String> sources = new List<string>();
+                if (verifiedModsNeeded.ToArray().Length < 1) { names.Add("Your mother!"); sources.Add("https://www.youtube.com/watch?v=ZDDAtkg-s-g"); }
+                for (int i = 0; i < verifiedModsNeeded.ToArray().Length; i++)
                 {
-                    controller.sourceLink = "https://www.beatmods.com";
-                } else
+                    string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[i]}&gameVersion={gameVersion}");
+                    var beatModsJson = JObject.Parse(beatModsOutput);
+                    names.Add(verifiedModsNeeded[i]);
+                    sources.Add(beatModsJson["link"].ToString());
+                }
+                names.Add("<h2>Community Mods</h2>");
+                sources.Add("");
+                if (communityModsNeeded.ToArray().Length < 1) { names.Add("Your mother!"); sources.Add("https://www.youtube.com/watch?v=ZDDAtkg-s-g"); }
+                for (int i = 0; i < communityModsNeeded.ToArray().Length; i++)
                 {
-                    List<String> names = new List<string>();
-                    List<String> sources = new List<string>();
-                    for (int i = 0; i < verifiedModsNeeded.ToArray().Length; i++)
-                    {
-                        string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[i]}&gameVersion={gameVersion}");
-                        var beatModsJson = JObject.Parse(beatModsOutput);
-                        names.Add(verifiedModsNeeded[i]);
-                        sources.Add(beatModsJson["link"].ToString());
-                    }
-                    names.Add("<h2>Community Mods</h2>");
-                    sources.Add("");
-                    for (int i = 0; i < communityModsNeeded.ToArray().Length; i++)
-                    {
                         String[] urlArgs = communityModsNeeded[i].Split('.');
                         names.Add(communityModsNeeded[i].Split('.')[1]);
                         sources.Add($"https://github.com/{urlArgs[0]}/{urlArgs[1]}");
-                    }
-                    builder.CreateWebsite(names.ToArray(), sources.ToArray(), Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html"));
-                    controller.sourceLink = Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html");
                 }
-            }
-            else {
+                builder.CreateWebsite(names.ToArray(), sources.ToArray(), Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html"));
+                controller.sourceLink = Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html");
+            } else {
                 controller.spnObject.SetActive(true);
                 if (beatmodsVerified) {
                     string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[0]}&gameVersion={gameVersion}");
