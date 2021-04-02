@@ -117,17 +117,14 @@ namespace RequiredModInstaller
                         {
                             string nextDependency = beatModsJson.SelectToken($"$.dependencies[{j}].name").ToString();
                             string specialPluginName = "";
+                            bool passedCheck = true;
                             try { specialPluginName = specialPluginNames.SelectToken($"$.{nextDependency}").ToString(); }
-                            catch (System.Exception e)
-                            {
-                                Log.Info("");
-                            }
-                            if (!pluginInstalled(nextDependency) && !totalModsNeeded.ToArray().Contains(nextDependency) && nextDependency != "BSIPA")
-                            {
-                                Log.Info($"Found required dependency {nextDependency}");
-                                totalModsNeeded.Add(nextDependency);
-                                verifiedModsNeeded.Add(nextDependency);
-                            } else if (!pluginInstalled(specialPluginName) && !totalModsNeeded.ToArray().Contains(specialPluginName))
+                            catch (System.Exception e) { }
+                            if (pluginInstalled(nextDependency) && specialPluginName == "") { passedCheck = false; }
+                            else if (totalModsNeeded.ToArray().Contains(nextDependency)) { passedCheck = false; }
+                            else if (nextDependency == "BSIPA") { passedCheck = false; }
+                            else if (pluginInstalled(specialPluginName) && specialPluginName != "") passedCheck = false;
+                            if (passedCheck)
                             {
                                 Log.Info($"Found required dependency {nextDependency}");
                                 totalModsNeeded.Add(nextDependency);
