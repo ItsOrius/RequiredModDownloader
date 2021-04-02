@@ -119,9 +119,10 @@
     <EmbeddedResource Include="Views\*" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="devSupportedMods.txt" />
+    <None Include="devSupportedMods.json" />
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="Directory.Build.targets" Condition="Exists('Directory.Build.targets')" />
+    <None Include="specialPluginNames.json" />
     <None Include="Views\InstallSucceeded.bsml" />
     <None Include="Views\MultiplePluginsNeeded.bsml" />
     <None Include="Views\SinglePluginNeeded.bsml" />

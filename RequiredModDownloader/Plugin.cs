@@ -8,6 +8,8 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using System.IO.Compression;
+using CustomJSONData.CustomLevelInfo;
+using Newtonsoft.Json;
 
 namespace RequiredModInstaller
 {
@@ -46,47 +48,49 @@ namespace RequiredModInstaller
             BS_Utils.Utilities.BSEvents.levelSelected -= OnLevelSelected;
         }
 
-        private void OnLevelSelected(LevelCollectionViewController levelCollection, IPreviewBeatmapLevel arg)
+        private void OnLevelSelected(LevelCollectionViewController levelCollection, IPreviewBeatmapLevel level)
         {
-            Log.Info($"Selected level: {arg.songName} by {arg.levelAuthorName}");
-            JObject CustomData = new JObject();
-            try
-            {
-                CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData beatmap = (CustomJSONData.CustomLevelInfo.CustomLevelInfoSaveData)arg;
-                CustomData = JObject.Parse(beatmap.customData);
-                Log.Info($"CustomData variable is equal to...\n\n{CustomData.ToString()}");
-            } catch (System.Exception e)
-            {
-                Debug.Log($"Failed to get CustomData: {e}");
-            }
+            Log.Info($"Selected level: {level.songName}");
             List<string> requiredMods = new List<string>();
             List<string> customMods = new List<string>();
-            try {
-                int requiredModsCount = CustomData["_requirements"].Count();
-                for (int i = 0; i < requiredModsCount; i++) requiredMods.Add(CustomData[$"_requirements[i]"].ToString());
-            } catch (System.Exception e) {
-                Debug.Log($"Failed to get _requirements: {e}");
-            }
-            try {
-                int customModsCount = CustomData["_customPlugins"].Count();
-                for (int i = 0; i < customModsCount; i++) customMods.Add(CustomData[$"_customPlugins[i]"].ToString());
-            } catch (System.Exception e)
+            if (level is CustomPreviewBeatmapLevel customLevel)
             {
-                Debug.Log($"Failed to get _customPlugins: {e}");
+                var saveData = customLevel.standardLevelInfoSaveData as CustomLevelInfoSaveData;
+                foreach (CustomLevelInfoSaveData.DifficultyBeatmapSet difficulties in saveData.difficultyBeatmapSets)
+                {
+                    foreach (CustomLevelInfoSaveData.DifficultyBeatmap difficulty in difficulties.difficultyBeatmaps)
+                    {
+                        List<object> requirements = CustomJSONData.Trees.at(difficulty.customData, "_requirements");
+                        if (requirements != null && requirements.Count > 0)
+                        {
+                            foreach (object i in requirements)
+                            {
+                                requiredMods.Add(i.ToString());
+                            }
+                        }
+                        List<object> customPlugins = CustomJSONData.Trees.at(difficulty.customData, "_customPlugins");
+                        if (customPlugins != null && customPlugins.Count > 0)
+                        {
+                            foreach (object i in customPlugins)
+                            {
+                                customMods.Add(i.ToString());
+                            }
+                        }
+                    }
+                }
+                CheckCustomMods(requiredMods.ToArray(), customMods.ToArray());
             }
-            CheckCustomMods(requiredMods.ToArray(), customMods.ToArray());
         }
 
         public void CheckCustomMods(String[] requiredMods, String[] customMods)
         {
-            if (Application.internetReachability == NetworkReachability.NotReachable) return;
-            if (requiredMods.Length < 1 || customMods.Length < 1) return;
+            if (requiredMods.Length < 1 || customMods.Length < 1 || Application.internetReachability == NetworkReachability.NotReachable) return;
 
             List<string> totalModsNeeded = new List<string>();
-            List<string> verifiedModsSource = new List<string>();
             List<string> verifiedModsNeeded = new List<string>();
             List<string> communityModsNeeded = new List<string>();
-            String[] devSupportedMods = new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/devSupportedMods.txt").Split('/');
+            String[] devSupportedMods;
+            JObject specialPluginNames = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/specialPluginNames.json"));
 
             bool beatmodsVerified = false;
             bool devVerified = false;
@@ -95,49 +99,76 @@ namespace RequiredModInstaller
             // check for any required BeatMods plugins that arent installed
             for (int i = 0; i < requiredMods.Length; i++)
             {
-                requiredMods[i].Replace(" ", "");
-                string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={requiredMods[i]}&gameVersion={gameVersion}");
+                string editedName = requiredMods[i].Replace(" ", "");
+                string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={editedName}&gameVersion={gameVersion}");
 
-                if (beatModsOutput != "[]" && !pluginInstalled(requiredMods[i]))
+                if (beatModsOutput != "[]" && !pluginInstalled(editedName))
                 {
+                    Log.Info($"Found required BeatMods mod {editedName}");
                     beatmodsVerified = true;
-                    totalModsNeeded.Add(requiredMods[i]);
-                    verifiedModsNeeded.Add(requiredMods[i]);
-                    JObject beatModsJson = JObject.Parse(beatModsOutput);
-                    int dependencyCheck = beatModsJson["dependencies"].Count();
-                    for (int j = 0; i < dependencyCheck; i++)
+                    totalModsNeeded.Add(editedName);
+                    verifiedModsNeeded.Add(editedName);
+                    try
                     {
-                        string nextDependency = beatModsJson.SelectToken($"dependencies[{j}].name").ToString();
-                        if (!pluginInstalled(nextDependency) && !totalModsNeeded.ToArray().Contains(nextDependency) || nextDependency != "BSIPA")
+                        JObject beatModsJson;
+                        beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });
+                        beatModsJson = JObject.Parse(beatModsOutput);
+                        for (int j = 0; j < beatModsJson.SelectToken("$.dependencies").Count(); j++)
                         {
-                            totalModsNeeded.Add(nextDependency);
-                            verifiedModsNeeded.Add(nextDependency);
+                            string nextDependency = beatModsJson.SelectToken($"$.dependencies[{j}].name").ToString();
+                            string specialPluginName = "";
+                            try { specialPluginName = specialPluginNames.SelectToken($"$.{nextDependency}").ToString(); }
+                            catch (System.Exception e)
+                            {
+                                Log.Info("");
+                            }
+                            if (!pluginInstalled(nextDependency) && !totalModsNeeded.ToArray().Contains(nextDependency) && nextDependency != "BSIPA")
+                            {
+                                Log.Info($"Found required dependency {nextDependency}");
+                                totalModsNeeded.Add(nextDependency);
+                                verifiedModsNeeded.Add(nextDependency);
+                            } else if (!pluginInstalled(specialPluginName) && !totalModsNeeded.ToArray().Contains(specialPluginName))
+                            {
+                                Log.Info($"Found required dependency {nextDependency}");
+                                totalModsNeeded.Add(nextDependency);
+                                verifiedModsNeeded.Add(nextDependency);
+                            }
                         }
+                    } catch (System.Exception e)
+                    {
+                        Log.Info($"Failed to get dependencies: {e}");
+                        return;
                     }
                 }
             }
 
             // check for custom plugins and if its dev supported or installed
-            if (customMods.Length > 0)
+            Log.Info("Checking for custom plugins");
+
+            JObject devSupportedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/devSupportedMods.json"));
+            List<string> devSupportedModsList = new List<string>();
+            for (int i = 0; i < devSupportedModsOutput.Count; i++) devSupportedModsList.Add(devSupportedModsOutput.SelectToken($"$.devSupportedMods[{i}]").ToString());
+            devSupportedMods = devSupportedModsList.ToArray();
+
+            for (int i = 0; i < customMods.Length; i++)
             {
-                for (int i = 0; i < customMods.Length; i++)
+                String[] urlArgs = customMods[i].Split('.');
+                if (!pluginInstalled($"{urlArgs[2]}.dll"))
                 {
-                    if (!pluginInstalled(customMods[i]))
-                    {
-                        totalModsNeeded.Add(requiredMods[i]);
-                        communityModsNeeded.Add(customMods[i]);
-                        if (devSupportedMods.Contains(customMods[i])) {
-                            devVerified = true;
-                        } else {
-                            unverified = true;
-                        }
+                    Log.Info($"Found required custom mod {customMods[i]}");
+                    totalModsNeeded.Add(customMods[i]);
+                    communityModsNeeded.Add(customMods[i]);
+                    if (devSupportedMods.Contains(customMods[i])) {
+                        devVerified = true;
+                    } else {
+                        unverified = true;
                     }
                 }
             }
 
             // finally, send a notification if needed
+            Log.Info("Attempting to send notification");
             if (totalModsNeeded.ToArray().Length < 1) return;
-            controller = new CustomViewController();
             if (totalModsNeeded.ToArray().Length > 1)
             {
                 controller.mpnObject.SetActive(true);
@@ -149,9 +180,10 @@ namespace RequiredModInstaller
                 for (int i = 0; i < verifiedModsNeeded.ToArray().Length; i++)
                 {
                     string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[i]}&gameVersion={gameVersion}");
-                    var beatModsJson = JObject.Parse(beatModsOutput);
+                    beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });
+                    JObject beatModsJson = JObject.Parse(beatModsOutput);
                     names.Add(verifiedModsNeeded[i]);
-                    sources.Add(beatModsJson["link"].ToString());
+                    sources.Add(beatModsJson.SelectToken("$.link").ToString());
                 }
                 names.Add("<h2>Community Mods</h2>");
                 sources.Add("");
@@ -168,8 +200,9 @@ namespace RequiredModInstaller
                 controller.spnObject.SetActive(true);
                 if (beatmodsVerified) {
                     string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[0]}&gameVersion={gameVersion}");
-                    var beatModsJson = JObject.Parse(beatModsOutput);
-                    controller.sourceLink = beatModsJson["link"].ToString();
+                    beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });
+                    JObject beatModsJson = JObject.Parse(beatModsOutput);
+                    controller.sourceLink = beatModsJson.SelectToken("$.link").ToString();
                     controller.spnText.text = Msg.SingleModNeeded(totalModsNeeded.ToArray()[0], "This mod was verified by the BeatMods community.");
                 } else {
                     String[] urlArgs = customMods[0].Split('.');
@@ -207,10 +240,11 @@ namespace RequiredModInstaller
                     try
                     {
                         string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedMods[i]}&gameVersion={gameVersion}");
-                        var beatModsJson = JObject.Parse(beatModsOutput);
-                        string downloadLink = $"https://www.beatmods.com{beatModsJson["downloads"]["url"].ToString()}";
+                        beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });
+                        JObject beatModsJson = JObject.Parse(beatModsOutput);
+                        string downloadLink = $"https://www.beatmods.com{beatModsJson.SelectToken("$.downloads.url").ToString()}";
                         new WebClient().DownloadFile(downloadLink, IPA.Utilities.UnityGame.InstallPath);
-                        String[] fileNameArgs = beatModsJson["downloads"]["url"].ToString().Split('/');
+                        String[] fileNameArgs = beatModsJson.SelectToken("$.downloads.url").ToString().Split('/');
                         String fileName = fileNameArgs[fileNameArgs.Length - 1];
                         var zipFileLocation = Path.Combine(IPA.Utilities.UnityGame.InstallPath, fileName);
                         ZipFile.ExtractToDirectory(zipFileLocation, IPA.Utilities.UnityGame.InstallPath);

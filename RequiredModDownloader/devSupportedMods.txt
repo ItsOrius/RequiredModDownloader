@@ -1,2 +1,0 @@
-﻿ItsOrius.RequiredModInstaller.DummyFile
-/ItsOrius.DigitalLovePlatform.DigitalLovePlatform
