@@ -3,7 +3,7 @@ The purpose of this plugin is to download any mods that a level requires that is
 
 For example, imagine someone tries to play ANALYS but they don't have Noodle Extensions. When they click on the level, a notification will appear telling the user they need Noodle Extensions to play it. Then there's an option for you to download the mod and reboot the game without having to switch to a PC! All approved plugins on BeatMods will automatically be capable of downloading within the game, if the level requires it.
 
-But this plugin also allows for the creator of their map to require their own custom plugins. The download link takes the form of a GitHub link as shown below, and this could result in insane modcharts we hadn't even imagined possible.
+But this plugin also allows for the creator of their map to require their own custom plugins. The download link takes the form of a GitHub link as shown below.
 ```dat
 "_customData" : {
     "_requirements" : [
