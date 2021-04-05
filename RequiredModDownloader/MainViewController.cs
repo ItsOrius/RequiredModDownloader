@@ -1,27 +1,21 @@
-﻿using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Attributes;
+﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace RequiredModInstaller
 {
-    public class CustomViewController : BSMLResourceViewController
+    public class MainViewController : BSMLResourceViewController
     {
         public string sourceLink;
         private bool inAction = false;
         public override string ResourceName => InstallSucceeded;
 
         // paths to different .bsml files
-        public string SinglePluginNeeded => "Namespace.Views.CustomPluginNeeded.bsml";
-        public string InstallFailed => "Namespace.Views.InstallFailed.bsml";
-        public string InstallSucceeded => "Namespace.Views.InstallSucceeded.bsml";
+        public string SinglePluginNeeded => "RequiredModInstaller.Views.SinglePluginNeeded.bsml";
+        public string MultiplePluginsNeeded => "RequiredModInstaller.Views.MultiplePluginsNeeded.bsml";
+        public string InstallFailed => "RequiredModInstaller.Views.InstallFailed.bsml";
+        public string InstallSucceeded => "RequiredModInstaller.Views.InstallSucceeded.bsml";
 
 
 
@@ -84,7 +78,7 @@ namespace RequiredModInstaller
         [UIAction("mpn-view-source")]
         private void MpnViewSource()
         {
-            Application.OpenURL(sourceLink);
+            if (sourceLink != "") Application.OpenURL(sourceLink);
         }
 
         [UIAction("mpn-install")]
@@ -94,7 +88,6 @@ namespace RequiredModInstaller
             spnText.text = $"\n\n{mpnText.text}\n\nInstalling plugins...";
             inAction = true;
             Plugin.Instance.InstallCachedMods();
-            inAction = false;
         }
 
         [UIAction("mpn-change-active")]

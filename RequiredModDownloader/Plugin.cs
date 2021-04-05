@@ -9,7 +9,6 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using CustomJSONData.CustomLevelInfo;
-using Newtonsoft.Json;
 
 namespace RequiredModInstaller
 {
@@ -22,7 +21,7 @@ namespace RequiredModInstaller
         string gameVersion = "1.13.4";
         List<string> verifiedModsCache = new List<string>();
         List<string> communityModsCache = new List<string>();
-        CustomViewController controller;
+        MainViewController controller;
 
         [Init]
         public void Init(IPALogger logger)
@@ -30,7 +29,7 @@ namespace RequiredModInstaller
             Instance = this;
             Log = logger;
             Log.Info("RequiredModInstaller initialized.");
-            controller = new CustomViewController();
+            controller = new MainViewController();
         }
 
         [OnStart]
@@ -140,8 +139,6 @@ namespace RequiredModInstaller
             }
 
             // check for custom plugins and if its dev supported or installed
-            Log.Info("Checking for custom plugins");
-
             JObject devSupportedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/devSupportedMods.json"));
             List<string> devSupportedModsList = new List<string>();
             for (int i = 0; i < devSupportedModsOutput.Count; i++) devSupportedModsList.Add(devSupportedModsOutput.SelectToken($"$.devSupportedMods[{i}]").ToString());
@@ -164,17 +161,28 @@ namespace RequiredModInstaller
             }
 
             // finally, send a notification if needed
-            Log.Info("Attempting to send notification");
-            if (totalModsNeeded.ToArray().Length < 1) return;
-            if (totalModsNeeded.ToArray().Length > 1)
+            Log.Info($"Total mods needed: {totalModsNeeded.Count}");
+            if (totalModsNeeded.Count < 1) return;
+            if (totalModsNeeded.Count > 1)
             {
-                controller.mpnObject.SetActive(true);
+                Log.Info("Attempting to send MPN notification");
+                //
+                //
+                // make this open the mpn menu somehow: controller.ResourceName = controller.MultiplePluginsNeeded;
+                //
+                //
+                Log.Info("line 175");
                 controller.mpnText.text = Msg.MultipleModsNeeded(totalModsNeeded.ToArray(), verifierText(beatmodsVerified, devVerified, unverified));
+                Log.Info("line 177");
                 WebsiteBuilder builder = new WebsiteBuilder();
+                Log.Info("line 177");
                 List<String> names = new List<string>();
+                Log.Info("line 179");
                 List<String> sources = new List<string>();
-                if (verifiedModsNeeded.ToArray().Length < 1) { names.Add("Your mother!"); sources.Add("https://www.youtube.com/watch?v=ZDDAtkg-s-g"); }
-                for (int i = 0; i < verifiedModsNeeded.ToArray().Length; i++)
+                Log.Info("line 181");
+                if (verifiedModsNeeded.Count < 1) { names.Add("Your mother!"); sources.Add("https://www.youtube.com/watch?v=ZDDAtkg-s-g"); }
+                Log.Info("Attempting to start verified mods loop");
+                for (int i = 0; i < verifiedModsNeeded.Count; i++)
                 {
                     string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[i]}&gameVersion={gameVersion}");
                     beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });
@@ -184,17 +192,24 @@ namespace RequiredModInstaller
                 }
                 names.Add("<h2>Community Mods</h2>");
                 sources.Add("");
-                if (communityModsNeeded.ToArray().Length < 1) { names.Add("Your mother!"); sources.Add("https://www.youtube.com/watch?v=ZDDAtkg-s-g"); }
-                for (int i = 0; i < communityModsNeeded.ToArray().Length; i++)
+                Log.Info("Attempting to start community mods loop");
+                if (communityModsNeeded.Count < 1) { names.Add("Your mother!"); sources.Add("https://www.youtube.com/watch?v=ZDDAtkg-s-g"); }
+                for (int i = 0; i < communityModsNeeded.Count; i++)
                 {
-                        String[] urlArgs = communityModsNeeded[i].Split('.');
-                        names.Add(communityModsNeeded[i].Split('.')[1]);
-                        sources.Add($"https://github.com/{urlArgs[0]}/{urlArgs[1]}");
+                    String[] urlArgs = communityModsNeeded[i].Split('.');
+                    names.Add(urlArgs[1]);
+                    sources.Add($"https://github.com/{urlArgs[0]}/{urlArgs[1]}");
                 }
+                Log.Info("Attempting create website and set source link");
                 builder.CreateWebsite(names.ToArray(), sources.ToArray(), Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html"));
                 controller.sourceLink = Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html");
             } else {
-                controller.spnObject.SetActive(true);
+                Log.Info("Attempting to send SPN notification");
+                //
+                //
+                // make this open the spn menu somehow: controller.ResourceName = controller.SinglePluginNeeded;
+                //
+                //
                 if (beatmodsVerified) {
                     string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[0]}&gameVersion={gameVersion}");
                     beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });

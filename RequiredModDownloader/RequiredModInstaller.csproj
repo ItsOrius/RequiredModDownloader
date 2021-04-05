@@ -106,7 +106,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomViewController.cs" />
+    <Compile Include="MainFlowCoordinator.cs" />
+    <Compile Include="MainViewController.cs" />
     <Compile Include="Msg.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
