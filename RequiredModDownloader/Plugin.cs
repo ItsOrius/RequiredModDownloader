@@ -88,8 +88,7 @@ namespace RequiredModInstaller
             List<string> totalModsNeeded = new List<string>();
             List<string> verifiedModsNeeded = new List<string>();
             List<string> communityModsNeeded = new List<string>();
-            String[] devSupportedMods;
-            JObject specialPluginNames = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/specialPluginNames.json"));
+            JObject specialPluginNames = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/SpecialPluginNames.json"));
 
             bool beatmodsVerified = false;
             bool devVerified = false;
@@ -139,16 +138,20 @@ namespace RequiredModInstaller
             }
 
             // check for custom plugins and if its dev supported or installed
-            JObject devSupportedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/devSupportedMods.json"));
-            List<string> devSupportedModsList = new List<string>();
-            for (int i = 0; i < devSupportedModsOutput.Count; i++) devSupportedModsList.Add(devSupportedModsOutput.SelectToken($"$.devSupportedMods[{i}]").ToString());
-            devSupportedMods = devSupportedModsList.ToArray();
+            JObject devSupportedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/DevSupportedMods.json"));
+            List<string> devSupportedMods = new List<string>();
+            for (int i = 0; i < devSupportedModsOutput.Count; i++) devSupportedMods.Add(devSupportedModsOutput.SelectToken($"$.devSupportedMods[{i}]").ToString());
+
+            JObject blacklistedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/BlacklistedMods.json"));
+            List<string> blacklistedMods = new List<string>();
+            for (int i = 0; i < blacklistedModsOutput.Count; i++) blacklistedMods.Add(blacklistedModsOutput.SelectToken($"$.blacklistedMods[{i}]").ToString());
 
             for (int i = 0; i < customMods.Length; i++)
             {
                 String[] urlArgs = customMods[i].Split('.');
-                if (!pluginInstalled($"{urlArgs[2]}.dll"))
-                {
+                if (blacklistedMods.Contains(customMods[i])) {
+                    Log.Info($"Level requires custom mod {customMods[i]} but it's blacklisted!");
+                } else if (!pluginInstalled($"{urlArgs[2]}.dll")) {
                     Log.Info($"Found required custom mod {customMods[i]}");
                     totalModsNeeded.Add(customMods[i]);
                     communityModsNeeded.Add(customMods[i]);
