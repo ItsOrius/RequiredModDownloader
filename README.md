@@ -26,4 +26,4 @@ In order to remind people of the inherent risk, we will always notify them if an
 
 Please keep in mind that if your custom mod needs dependencies (like nearly all mods) you'll have to include them in ``_requirements`` (with the exception of BSIPA), as we can't tell what dependencies you have linked in your mod. If your custom plugin relies on another custom plugin that isn't on BeatMods, include the proprietary GitHub link to it in ``_customPlugins``.
 
-When giving your releases a "version," please use the format of ``v(Beat Saber Version).(Version Release Number)`` so that we can make sure players only download the plugin if the version is up-to-date (i.e. v1.11.0.1, v1.11.0.2, v1.12.0.1).
+When giving your releases a "version," please use the format of ``v(Beat Saber Version).(Version Release Number)`` so that we can make sure players only download the plugin if the version is up-to-date (i.e. v1.11.0.1, v1.11.0.2, v1.12.0.1). This feature isn't implemented yet but will be in the future, and may allow for an updating feature.
