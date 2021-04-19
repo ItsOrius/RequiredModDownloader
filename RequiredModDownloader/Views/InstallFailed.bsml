@@ -1,4 +1,4 @@
-﻿<modal id='if'>
+﻿<modal id='if' show-event='show-if' hide-event='hide-if'>
   <vertical child-control-height='false'>
     <horizontal bg='panel-top' pad-left='10' pad-right='10' horizontal-fit='PreferredSize'>
       <text text='RequiredModInstaller' align='Center' font-size='10'></text>
@@ -6,6 +6,6 @@
     <horizontal bg='round-rect-panel' pad='8'>
       <text id='if-text' text='Failed to install mod(s).'></text>
     </horizontal>
-    <button on-click='if-change-active' text='Return'></button>
+    <button on-click='if-close-menu' text='Return'></button>
   </vertical>
 </modal>

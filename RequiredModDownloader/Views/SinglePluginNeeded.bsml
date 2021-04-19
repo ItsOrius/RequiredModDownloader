@@ -1,4 +1,4 @@
-﻿<modal id='spn'>
+﻿<modal id='spn' show-event='show-spn' hide-event='hide-spn'>
   <vertical child-control-height='false'>
     <horizontal bg='panel-top' pad-left='10' pad-right='10' horizontal-fit='PreferredSize'>
       <text text='RequiredModInstaller' align='Center' font-size='10'></text>
@@ -6,8 +6,8 @@
     <horizontal bg='round-rect-panel' pad='8'>
       <text id='spn-text' text='Failed to load text!'></text>
     </horizontal>
-    <button on-click='spn-change-active' text='Return'></button>
-    <button on-click='spn-view-source' text='View Source'></button>
-    <button on-click='spn-install' text='Install'></button>
+    <button on-click='spn-close-menu' text='Return'></button>
+    <button on-click='view-source' text='View Source'></button>
+    <button on-click='install-plugins' text='Install'></button>
   </vertical>
 </modal>

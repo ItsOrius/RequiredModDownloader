@@ -106,11 +106,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainFlowCoordinator.cs" />
     <Compile Include="MainViewController.cs" />
     <Compile Include="Msg.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
+    <Compile Include="PluginConfig.cs" />
     <Compile Include="RequiredModInstallerController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebsiteBuilder.cs" />

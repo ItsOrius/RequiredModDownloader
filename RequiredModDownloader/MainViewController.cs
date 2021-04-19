@@ -1,4 +1,5 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.Parser;
 using BeatSaberMarkupLanguage.ViewControllers;
 using TMPro;
 using UnityEngine;
@@ -9,6 +10,8 @@ namespace RequiredModInstaller
     {
         public string sourceLink;
         private bool inAction = false;
+        [UIParams]
+        BSMLParserParams parserParams = null;
         public override string ResourceName => InstallSucceeded;
 
         // paths to different .bsml files
@@ -23,66 +26,39 @@ namespace RequiredModInstaller
 
         // Global Actions
         [UIAction("reboot")]
-        private void Reboot()
+        public void Reboot()
         {
             if (inAction) return;
             Application.Quit();
         }
 
-
-
-
-
-        // SinglePluginNeeded.bsml
-        [UIObject("spn")]
-        public GameObject spnObject;
-
-        [UIComponent("spn-text")]
-        public TextMeshProUGUI spnText;
-
-        [UIAction("spn-view-source")]
-        private void SpnViewSource()
+        public void ToggleMenuVisible(string menuId, bool isVisible)
         {
-            if (sourceLink != "") Application.OpenURL(sourceLink);
+            switch(menuId.ToLower())
+            {
+                case "spn":
+                    if (isVisible) { parserParams.EmitEvent("show-spn"); } else { parserParams.EmitEvent("hide-spn"); }
+                    break;
+                case "mpn":
+                    if (isVisible) { parserParams.EmitEvent("show-mpn"); } else { parserParams.EmitEvent("hide-mpn"); }
+                    break;
+                case "if":
+                    if (isVisible) { parserParams.EmitEvent("show-if"); } else { parserParams.EmitEvent("hide-if"); }
+                    break;
+                case "is":
+                    if (isVisible) { parserParams.EmitEvent("show-is"); } else { parserParams.EmitEvent("hide-is"); }
+                    break;
+            }
+         }
+
+        [UIAction("view-source")]
+        public void ViewSource()
+        {
+            if (!string.IsNullOrWhiteSpace(sourceLink)) { Application.OpenURL(sourceLink); }
         }
 
-        [UIAction("spn-install")]
-        private void SpnInstall()
-        {
-            if (inAction) return;
-            spnText.text = $"\n\n{spnText.text}\n\nInstalling plugins...";
-            inAction = true;
-            Plugin.Instance.InstallCachedMods();
-            inAction = false;
-        }
-
-        [UIAction("spn-change-active")]
-        public void SpnChangeActive()
-        {
-            if (inAction) return;
-            if (spnObject.activeSelf) spnObject.SetActive(false);
-            else spnObject.SetActive(true);
-        }
-
-
-
-
-
-        // MultiplePluginsNeeded.bsml
-        [UIObject("mpn")]
-        public GameObject mpnObject;
-
-        [UIComponent("mpn-text")]
-        public TextMeshProUGUI mpnText;
-
-        [UIAction("mpn-view-source")]
-        private void MpnViewSource()
-        {
-            if (sourceLink != "") Application.OpenURL(sourceLink);
-        }
-
-        [UIAction("mpn-install")]
-        private void MpnInstall()
+        [UIAction("install-plugins")]
+        private void InstallPlugins()
         {
             if (inAction) return;
             spnText.text = $"\n\n{mpnText.text}\n\nInstalling plugins...";
@@ -90,12 +66,34 @@ namespace RequiredModInstaller
             Plugin.Instance.InstallCachedMods();
         }
 
-        [UIAction("mpn-change-active")]
-        public void MpnChangeActive()
+
+
+
+
+        // SinglePluginNeeded.bsml
+        [UIComponent("spn-text")]
+        public TextMeshProUGUI spnText;
+
+        [UIAction("spn-close-menu")]
+        public void SpnCloseMenu()
         {
             if (inAction) return;
-            if (spnObject.activeSelf) spnObject.SetActive(false);
-            else spnObject.SetActive(true);
+            parserParams.EmitEvent("hide-spn");
+        }
+
+
+
+
+
+        // MultiplePluginsNeeded.bsml
+        [UIComponent("mpn-text")]
+        public TextMeshProUGUI mpnText;
+
+        [UIAction("mpn-close-menu")]
+        public void MpnCloseMenu()
+        {
+            if (inAction) return;
+            parserParams.EmitEvent("hide-mpn");
         }
 
 
@@ -103,18 +101,14 @@ namespace RequiredModInstaller
 
 
         // InstallFailed.bsml
-        [UIObject("if")]
-        public GameObject ifObject;
-
         [UIComponent("if-text")]
         public TextMeshProUGUI ifText;
 
-        [UIAction("if-change-active")]
-        public void IfChangeActive()
+        [UIAction("if-close-menu")]
+        public void IfCloseMenu()
         {
             inAction = false;
-            if (ifObject.activeSelf) ifObject.SetActive(false);
-            else ifObject.SetActive(true);
+            parserParams.EmitEvent("hide-if");
         }
 
 
@@ -122,18 +116,14 @@ namespace RequiredModInstaller
 
 
         // InstallSucceeded.bsml
-        [UIObject("is")]
-        public GameObject isObject;
-
         [UIComponent("is-text")]
         public TextMeshProUGUI isText;
 
-        [UIAction("is-change-active")]
-        public void IsChangeActive()
+        [UIAction("is-close-menu")]
+        public void IsCloseMenu()
         {
             inAction = false;
-            if (isObject.activeSelf) isObject.SetActive(false);
-            else isObject.SetActive(true);
+            parserParams.EmitEvent("hide-is");
         }
     }
 }

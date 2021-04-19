@@ -1,12 +1,12 @@
-﻿<modal id='is'>
+﻿<modal id='is' show-event='show-is' hide-event='hide-is'>
   <vertical child-control-height='false'>
     <horizontal bg='panel-top' pad-left='10' pad-right='10' horizontal-fit='PreferredSize'>
       <text text='RequiredModInstaller' align='Center' font-size='10'></text>
     </horizontal>
     <horizontal bg='round-rect-panel' pad='8'>
-      <text id='is-text' text='Successfully installed mod(s)!\nPlease restart for the changes to take effect.'></text>
+      <text id='is-text' text='Successfully installed mod(s)! Please reboot for the changes to take effect.'></text>
     </horizontal>
-    <button on-click='is-change-active' text='Return'></button>
-    <button on-click='restart' text='Restart'></button>
+    <button on-click='is-close-menu' text='Return'></button>
+    <button on-click='reboot' text='Reboot'></button>
   </vertical>
 </modal>
