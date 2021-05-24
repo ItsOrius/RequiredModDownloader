@@ -18,7 +18,9 @@ But this plugin also allows for the creator of their map to require their own cu
     ]
 }
 ```
-The settings above would download ``https://github.com/MyCoolUsername/MyCoolModRepository/releases/latest/download/MyCoolModFileName.dll`` and ``https://github.com/MyCoolerUsername/MyCoolerModRepository/releases/latest/download/MyCoolerModFileName.dll``, as well as CoolModDependency and CoolerModDependency if they're available on BeatMods. Make sure to include your custom mod names in ``_requirements``, or they may play the level without them!
+The settings above would download ``https://github.com/MyCoolUsername/MyCoolModRepository/releases/latest/download/MyCoolModFileName.dll`` and ``https://github.com/MyCoolerUsername/MyCoolerModRepository/releases/latest/download/MyCoolerModFileName.dll``, as well as CoolModDependency and CoolerModDependency if they're available on BeatMods. Make sure to include your custom mod names in ``_requirements``, or the user can play the level without installing them!
+
+**TO BE CLEAR,** ``_customPlugins`` **IS FOR GITHUB PLUGINS. PUT BEATMODS PLUGINS IN** ``_requirements`` **INSTEAD!**
 
 Basically, the plugins follow a ``(username).(repositoryName).(dllFileName)`` template. The reason for this is that a custom download link for the plugins could result in somebody using it maliciously, i.e. putting some form of malware on the PC. That system still doesn't protect you from viruses uploaded to GitHub, which is why ``.dll`` is automatically added to the end of ``dllFileName``. Even with all of this, you still aren't safe because someone could hijack the DLL file with some form of a virus (we all saw what happened with HitSoundPlus).
 
