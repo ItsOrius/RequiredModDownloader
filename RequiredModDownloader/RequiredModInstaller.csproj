@@ -107,28 +107,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainViewController.cs" />
-    <Compile Include="Msg.cs" />
+    <Compile Include="utils\Msg.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="RequiredModInstallerController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebsiteBuilder.cs" />
+    <Compile Include="utils\WebsiteBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
     <EmbeddedResource Include="Views\*" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="BlacklistedMods.json" />
-    <None Include="DevSupportedMods.json" />
+    <None Include="json\BlacklistedMods.json" />
+    <None Include="json\DevSupportedMods.json" />
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="Directory.Build.targets" Condition="Exists('Directory.Build.targets')" />
-    <None Include="SpecialPluginNames.json" />
-    <None Include="Views\InstallSucceeded.bsml" />
-    <None Include="Views\MultiplePluginsNeeded.bsml" />
-    <None Include="Views\SinglePluginNeeded.bsml" />
-    <None Include="Views\InstallFailed.bsml" />
+    <None Include="json\SpecialPluginNames.json" />
+    <None Include="views\InstallSucceeded.bsml" />
+    <None Include="views\MultiplePluginsNeeded.bsml" />
+    <None Include="views\SinglePluginNeeded.bsml" />
+    <None Include="views\InstallFailed.bsml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">

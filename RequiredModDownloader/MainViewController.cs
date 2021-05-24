@@ -58,10 +58,11 @@ namespace RequiredModInstaller
         }
 
         [UIAction("install-plugins")]
-        private void InstallPlugins()
+        public void InstallPlugins()
         {
             if (inAction) return;
-            spnText.text = $"\n\n{mpnText.text}\n\nInstalling plugins...";
+            spnText.text = $"\n\n{spnText.text}\n\nInstalling plugin...";
+            mpnText.text = $"\n\n{mpnText.text}\n\nInstalling plugins...";
             inAction = true;
             Plugin.Instance.InstallCachedMods();
         }

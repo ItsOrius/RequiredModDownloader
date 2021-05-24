@@ -91,9 +91,9 @@ namespace RequiredModInstaller
             List<string> totalModsNeeded = new List<string>();
             List<string> verifiedModsNeeded = new List<string>();
             List<string> communityModsNeeded = new List<string>();
-            JObject specialPluginNames = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/specialPluginNames.json"));
-            JObject devSupportedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/devSupportedMods.json"));
-            JObject blacklistedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/BlacklistedMods.json"));
+            JObject specialPluginNames = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/json/SpecialPluginNames.json"));
+            JObject devSupportedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/json/DevSupportedMods.json"));
+            JObject blacklistedModsOutput = JObject.Parse(new WebClient().DownloadString("https://raw.githubusercontent.com/ItsOrius/RequiredModInstaller/master/RequiredModDownloader/json/BlacklistedMods.json"));
 
             bool beatmodsVerified = false;
             bool devVerified = false;
@@ -124,7 +124,7 @@ namespace RequiredModInstaller
                             string specialPluginName = "";
                             bool passedCheck = true;
                             try { specialPluginName = specialPluginNames.SelectToken($"$.{nextDependency}").ToString(); }
-                            catch (System.Exception e) { }
+                            catch (Exception e) { }
                             if (PluginInstalled(nextDependency) && string.IsNullOrWhiteSpace(specialPluginName)) { passedCheck = false; }
                             else if (totalModsNeeded.ToArray().Contains(nextDependency)) { passedCheck = false; }
                             else if (nextDependency == "BSIPA") { passedCheck = false; }
@@ -135,7 +135,7 @@ namespace RequiredModInstaller
                                 verifiedModsNeeded.Add(nextDependency);
                             }
                         }
-                    } catch (System.Exception e)
+                    } catch (Exception e)
                     {
                         Log.Info($"Failed to get dependencies: {e}");
                         return;
@@ -147,23 +147,24 @@ namespace RequiredModInstaller
 
             // check for custom plugins and if its dev supported or installed
             List<string> devSupportedMods = new List<string>();
-            for (int i = 0; i < devSupportedModsOutput.Count; i++) devSupportedMods.Add(devSupportedModsOutput.SelectToken($"$.devSupportedMods[{i}]").ToString());
+            for (int i = 0; i < devSupportedModsOutput.Count; i++) devSupportedMods.Add(devSupportedModsOutput.SelectToken($"$.devSupportedMods[{i}]").ToString().ToLower());
             List<string> blacklistedMods = new List<string>();
-            for (int i = 0; i < blacklistedModsOutput.Count; i++) blacklistedMods.Add(blacklistedModsOutput.SelectToken($"$.blacklistedMods[{i}]").ToString());
+            for (int i = 0; i < blacklistedModsOutput.Count; i++) blacklistedMods.Add(blacklistedModsOutput.SelectToken($"$.blacklistedMods[{i}]").ToString().ToLower());
 
             for (int i = 0; i < customMods.Length; i++)
             {
                 string[] urlArgs = customMods[i].Split('.');
-                if (blacklistedMods.Contains(customMods[i])) {
+                if (blacklistedMods.Contains(customMods[i].ToLower())) {
                     Log.Info($"Level requires custom mod {customMods[i]} but it's blacklisted!");
                 } else if (!PluginInstalled(urlArgs[2])) {
-                    Log.Info($"Found required custom mod {customMods[i]}");
                     totalModsNeeded.Add(customMods[i]);
                     communityModsNeeded.Add(customMods[i]);
                     if (devSupportedMods.Contains(customMods[i])) {
                         devVerified = true;
+                        Log.Info($"Found required dev-verified custom mod {customMods[i]}");
                     } else {
                         unverified = true;
+                        Log.Info($"Found required unverified custom mod {customMods[i]}");
                     }
                 }
             }
@@ -182,9 +183,7 @@ namespace RequiredModInstaller
             {
                 Log.Info("Attempting to send MPN notification");
                 controller.ToggleMenuVisible("mpn", true);
-                Log.Info("line 175");
                 controller.mpnText.text = Msg.MultipleModsNeeded(totalModsNeeded.ToArray(), VerifierText(beatmodsVerified, devVerified, unverified));
-                Log.Info("line 177");
                 WebsiteBuilder builder = new WebsiteBuilder();
                 List<string> verifiedNames = new List<string>();
                 List<string> verifiedSources = new List<string>();
@@ -211,10 +210,16 @@ namespace RequiredModInstaller
                 }
                 Log.Info("Attempting create website and set source link");
                 builder.CreateWebsite(verifiedNames.ToArray(), verifiedSources.ToArray(), customNames.ToArray(), customSources.ToArray(), Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html"));
-                controller.sourceLink = Path.Combine(IPA.Utilities.UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html");
+                controller.sourceLink = Path.Combine(UnityGame.InstallPath, "UserData", "RequiredModInstaller", "requiredmodinstaller.html");
             } else {
                 Log.Info("Attempting to send SPN notification");
-                controller.ToggleMenuVisible("spn", true);
+                try {
+                    controller.ToggleMenuVisible("spn", true);
+                } catch(System.Exception e)
+                {
+                    Log.Info($"Failed to toggle menu visible: {e}");
+                    return;
+                }
                 if (beatmodsVerified) {
                     string beatModsOutput = new WebClient().DownloadString($"https://beatmods.com/api/v1/mod?status=approved&name={verifiedModsNeeded[0]}&gameVersion={gameVersion}");
                     beatModsOutput = beatModsOutput.TrimStart(new char[] { '[' }).TrimEnd(new char[] { ']' });
@@ -268,7 +273,7 @@ namespace RequiredModInstaller
                         ZipFile.ExtractToDirectory(zipFileLocation, UnityGame.InstallPath);
                         File.Delete(zipFileLocation);
                         s++;
-                    } catch (System.Exception e)
+                    } catch (Exception e)
                     {
                         Log.Log(IPALogger.Level.Info, $"Failed to download verified plugin: {e}");
                         f++;
@@ -312,9 +317,9 @@ namespace RequiredModInstaller
             }
         }
 
-        public bool PluginInstalled(string fileName)
+        public bool PluginInstalled(string pluginName)
         {
-            return File.Exists(Path.Combine(IPA.Utilities.UnityGame.InstallPath, "Plugins", $"{fileName}.dll"));
+            return File.Exists(Path.Combine(UnityGame.InstallPath, "Plugins", $"{pluginName}.dll"));
         }
 
         public string VerifierText(bool a, bool b, bool c)
